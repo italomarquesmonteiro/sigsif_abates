@@ -1,0 +1,315 @@
+---
+title: "Análise grafica de dados de abate, estabelecimento, condenações, carcaça"
+description: "MAPA, PGA, SIGSIF"
+author:
+  - name: "Ítalo Marques-Monteiro"
+    url: https://scholar.google.com/citations?user=xGU7H1QAAAAJ&hl=en
+    affiliation: Anhanguera College
+        Department: Veterinary Medicine
+    affiliation_url: https://www.anhanguera.com
+    lattes: http://lattes.cnpq.br/717498536851713s
+    linkedin: linkedin.com/in/ítalo-monteiro-0b2516144
+    researchgate: https://www.researchgate.net/profile/Italo-Monteiro
+    orcid_id: https://orcid.org/0000-0003-4367-1034
+    kaggle: https://www.kaggle.com/talomarquesmonteiro
+    github: https://github.com/italomarquesmonteiro
+
+date: "2022-11-01"
+output: html_document
+---
+*Plataforma de Gestão Agropecuária - PGA*
+*Sistema de Informações Gerenciais do Serviço de Inspeção Federal – SIGSIF*
+Informações referentes aos mapas de condenação de carcaças de animais lançados no sistema SIGSIF; 
+Relação dos estabelecimentos registrados no sistema SIGSIF; 
+Informações referentes a estabelecimentos estrangeiros habilitados a exportar para o Brasil; 
+Informações sobre estabelecimentos nacionais habilitados à exportação por País; 
+<Informações referentes à quantidade de animais abatidos por categoria nas Unidades Federativas;>
+Informações quanto à diagnóstico de doenças por procedência em SIFs; 
+Informações sobre quantidade de animais abatidos, por espécie, categoria e UF de procedência; 
+Informações sobre espécie abatida por UF; 
+Informações referentes a quantidade de condenações por Unidades Federativas; 
+Informações referentes ao diagnóstico de doenças por procedência em SIFs; 
+Informações referentes a estabelecimentos de POA.
+
+o *package* [`{tidyverse}`](https://www.tidyverse.org) possui um ecossistema de packages:
+                           ->[{`ggplot2`}](https://ggplot2.tidyverse.org/).
+                            ->[{`tibble`}](https://tibble.tidyverse.org/).
+                             ->[{`tidyr`}](https://tidyr.tidyverse.org/).
+                              ->[{`dplyr`}](https://dplyr.tidyverse.org/).
+                               ->[{`readr`}](https://readr.tidyverse.org/).
+                                ->[{`purrr`}](https://purrr.tidyverse.org/).
+                                 ->[{`forcats`}](https://forcats.tidyverse.org/).
+```{r}
+library(tidyverse)
+```
+
+
+ <dados originais = sigsifrelatorioabates.csv (https://dados.agricultura.gov.br/dataset/servico-de-inspecao-federal-sif)
+```{r}
+readr::read_csv("sigsifrelatorioabates.csv")
+```
+
+
+manipulação dos dados para analise grafica de abate por categoria
+```{r}
+abate_categoria <- readr::read_csv2("sigsifrelatorioabates.csv",
+                                        col_types = "cccii",
+                                        locale = locale(decimal_mark = ",",
+                                        grouping_mark = ".")) %>%
+    janitor::clean_names("snake") %>%
+    dplyr::rename(
+        uf = uf_procedencia,
+        Male = qtd_macho,
+        Female = qtd_femea) %>%
+    tidyr::separate(mes_ano, sep = "/", into = c("mes", "ano")) %>%
+    tidyr::pivot_longer(cols = 5 : 6, names_to = "sexo", values_to = "qtd")
+```
+ 
+
+* Espécies:
+            -> Bovina: (_Bos taurus taurus_ ou _Bos taurus indicus_) 
+            -> Bubalina: (_Bubalus bubalis_)
+            -> Suína: (_Sus scrofa domesticus_)
+            -> Ovina: (_Ovis aries_)
+            -> Cabra: (_Capra aegagrus hircus_)
+            -> Equina: (_Equus caballus_)
+            -> Asinino: (_Equus asinus_)
+            -> Muar: (_Equus asinus_ x _Equus caballus_)
+            -> Ave: (_Gallus gallus domesticus_)
+            -> Coelho: (_Oryctolagus cuniculus_)
+    * Aves mistas:
+            -> Peru: (_Meleagris_)
+            -> Pato: (_Anatidae_)
+            -> Faizão: (_Anatidae_)
+            -> Perdiz: (_Rhynchotus rufescens_)
+            -> Codorna: (_Nothura maculosa_)
+            -> Marreco: (_Spatula querquedula_)
+            -> Ganso: (_Anser_)
+       * Ratitas: 
+            -> Ema: (_Rhea americana_)
+
+    * Silvestres:
+            -> Capivara: (_Hydrochoerus hydrochaeris_)
+            -> Javali: (_Sus scrofa_)
+            -> Queixada: (_Tayassu pecari_)
+            -> Jacaré: (_Alligatoridae_)
+            -> Paca: (_Cuniculus paca_)
+            -> Cutia: (_Dasyprocta_)
+
+    * Peixes:
+    
+criar um *dataset* com uma coluna por especie abatida 
+```{r}
+abate_especie <- abate_categoria %>%
+    dplyr::mutate(
+        especie = case_when(
+            stringr::str_detect(categoria, "^Bovino") ~ "Bovina",
+            stringr::str_detect(categoria, "^Novilh") ~ "Bovina",
+            stringr::str_detect(categoria, "^Touro") ~ "Bovina",
+            stringr::str_detect(categoria, "^Vaca") ~ "Bovina",
+            stringr::str_detect(categoria, "^Vitelo") ~ "Bovina",
+            stringr::str_detect(categoria, "^Nonat") ~ "Bovina",
+            stringr::str_detect(categoria, "^Bufal") ~ "Bubalina",
+            stringr::str_detect(categoria, "^Bubali") ~ "Bubalina",
+            stringr::str_detect(categoria, "^Suin") ~ "Suina",
+            stringr::str_detect(categoria, "^Leit") ~ "Suina",
+            stringr::str_detect(categoria, "^Porc") ~ "Suina",
+            stringr::str_detect(categoria, "^Suín") ~ "Suina",
+            stringr::str_detect(categoria, "^Ovin") ~ "Ovina",
+            stringr::str_detect(categoria, "^Cordeir") ~ "Ovina",
+            stringr::str_detect(categoria, "^Capao") ~ "Ovina",
+            stringr::str_detect(categoria, "^Ovelh") ~ "Ovina",
+            stringr::str_detect(categoria, "^Caprin") ~ "Caprina",
+            stringr::str_detect(categoria, "^Cabrit") ~ "Caprina",
+            stringr::str_detect(categoria, "^Equin") ~ "Equina",
+            stringr::str_detect(categoria, "^Asin") ~ "Asinino",
+            stringr::str_detect(categoria, "^Muar") ~ "Muar",
+            stringr::str_detect(categoria, "^Frang") ~ "Ave",
+            stringr::str_detect(categoria, "^Galinha Dangola") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Gal") ~ "Ave",
+            stringr::str_detect(categoria, "^Galinha") ~ "Ave",
+            stringr::str_detect(categoria, "^Avestruz") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Aves") ~ "Ave",
+            stringr::str_detect(categoria, "^Capivara") ~ "Capivara",
+            stringr::str_detect(categoria, "^Coelh") ~ "Coelho",
+            stringr::str_detect(categoria, "^Peru") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Faiz") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Pato") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Perdiz") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Codorn") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Marrec") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Ganso") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Ema") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Ratitas") ~ "Ave_Mista",
+            stringr::str_detect(categoria, "^Javali") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Queixad") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Jacar") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Outros") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Ra") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Catet") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Paca") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Rã") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Cutia") ~ "Silvestres",
+            stringr::str_detect(categoria, "^Peixe") ~ "Peixe",
+            stringr::str_detect(categoria, "^Til") ~ "Peixe",
+            stringr::str_detect(categoria, "^Pint") ~ "Peixe",
+            stringr::str_detect(categoria, "^Pia") ~ "Peixe",
+            stringr::str_detect(categoria, "^Cam") ~ "Peixe",
+            stringr::str_detect(categoria, "^Pir") ~ "Peixe",
+            stringr::str_detect(categoria, "^Tamba") ~ "Peixe",
+            stringr::str_detect(categoria, "^Bagre") ~ "Peixe",
+            stringr::str_detect(categoria, "^Pacu") ~ "Peixe",
+            stringr::str_detect(categoria, "^Truta") ~ "Peixe",
+            stringr::str_detect(categoria, "^Lamb") ~ "Peixe",
+            stringr::str_detect(categoria, "^Savelh") ~ "Peixe",
+            stringr::str_detect(categoria, "^Panga") ~ "Peixe",
+            TRUE ~ "outras"
+            )
+        ) %>%
+    dplyr::relocate(mes : uf, especie, categoria : qtd) %>%
+    tibble::view()
+```
+
+
+```{r}
+abt_uf <-
+abate_especie %>%
+    filter(especie == "Bovina") %>%
+    group_by(ano, uf) %>%
+    summarise(tot_ano = sum(qtd),
+                mean_ano = mean(qtd)) %>%
+    ggplot(aes(x = tot_ano / 1000000, y = reorder(uf, tot_ano),
+                fill = as.factor(ano))) +
+    geom_col() +
+    scale_x_continuous(labels = scales::comma) +
+    scale_fill_viridis_d() +
+    labs(title = "Historical series of cattle slaughter",
+        subtitle = "Federal Inspection Service Values (1995-2022)",
+        fill = "Year",
+        x = "Number ofcattle",
+        y = "Federative Units of Brazil",
+        caption = "by Ítalo Monteiro
+        Source: MAPA [open data(2022)]") +
+    theme(
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        #legend.position = "none",
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 14, color = "black"),
+        axis.text.x = element_text(size = 14, color = "black"),
+        axis.line = element_line(colour = "black"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
+        )
+abt_uf
+ggsave("Images/abt_uf.png", plot = abt_uf, dpi = 1200)
+```
+
+
+```{r}
+```
+
+```{r}
+abt_sc <-
+abate_especie %>%
+    filter(uf == "SC" & especie == "Bovina") %>%
+    group_by(ano, sexo) %>%
+    summarise(tot_ano = sum(qtd),
+                mean_ano = mean(qtd)) %>%
+    ggplot(aes(ano, tot_ano, fill = as.factor(sexo))) +
+    scale_y_continuous(labels = scales::comma) +
+    scale_fill_manual(values = c("#E46726", "#6D9EC1")) +
+    geom_col(position = "dodge", width = .7, color = "black") +
+    labs(title = "Historical series of cattle abated in Santa Catarina",
+        subtitle = "Federal Inspection Service Values",
+        fill = "Gender",
+        x = "Year",
+        y = "Number of cattle slaughter",
+        caption = "by Ítalo Monteiro
+        Source: MAPA [open data(2022)]") +
+    theme(
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        #legend.position = "none",
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 14, color = "black"),
+        axis.text.x = element_text(size = 14, color = "black"),
+        axis.line = element_line(colour = "black"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
+        )
+abt_sc
+ggsave("Images/abt_sc.png", plot = abt_sc, dpi = 1200)
+```
+
+ 
+```{r}
+abt_mt <-
+abate_especie %>%
+    filter(uf == "SC" & especie == "Bovina") %>%
+    ggplot(aes(qtd, ano, fill = as.factor(sexo))) +
+    ggridges::geom_density_ridges(quantile_lines = TRUE,
+        quantile_fun = function(qtd, ...) mean(qtd), alpha = .7) +
+    scale_x_continuous(labels = scales::comma) +
+    facet_grid(~ sexo) +
+    scale_fill_viridis_d() +
+    #scale_fill_manual(values = c("#E46726", "#6D9EC1")) +
+    labs(title = "Historical series of cattle abated in Santa Catarina",
+        subtitle = "Federal Inspection Service Values (2002-2022)",
+        fill = "Gender",
+        x = "*Annual cattle slaughter density",
+        y = "Year",
+        caption = "by Ítalo Monteiro
+        Source: MAPA [open data(2022)]") +
+    theme(
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        #legend.position = "none",
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 14, color = "black"),
+        axis.text.x = element_text(size = 14, color = "black"),
+        axis.line = element_line(colour = "black"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
+        ) +
+    annotate("text", x = 6000, y = 1.5, label = "* thousands of heads") +
+    annotate("text", x = 7000, y = 2.5, label = "| vertical line - mean")
+abt_mt
+ggsave("Images/abt_mt.png", plot = abt_mt, dpi = 1200)
+``` 
+
+
+
+#& uf == c("RN", "PI", "DF", "PE", "PB", "CE", "AP)
+
+
+
+```{r}
+abate_especie %>%
+    filter(especie == "Bovina") %>%
+    group_by(ano, uf), sexo %>%
+    summarise(tot_ano = sum(qtd),
+                mean_ano = mean(qtd)) %>%
+    ggplot(aes(x = tot_ano, y = reorder(uf, tot_ano), fill = as.factor(ano))) +
+    geom_col() +
+    facet_grid(~ sexo) +
+    scale_x_continuous(labels = scales::comma) +
+    scale_fill_viridis_d() +
+    labs(title = "Historical series of cattle slaughter",
+        subtitle = "Federal Inspection Service Values (1995-2022)",
+        fill = "Year",
+        x = "Number ofcattle",
+        y = "Federative Units of Brazil",
+        caption = "by Ítalo Monteiro
+        Source: MAPA [open data(2022)]") +
+    theme(
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 12),
+        #legend.position = "none",
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        axis.text.y = element_text(size = 14, color = "black"),
+        axis.text.x = element_text(size = 14, color = "black"),
+        axis.line = element_line(colour = "black"),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
+        )
