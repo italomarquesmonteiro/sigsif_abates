@@ -1,5 +1,5 @@
 ---
-title: "Análise grafica de dados de abate, estabelecimento, condenações, carcaça"
+title: "Análise grafica de dados de abate, estabelecimento, condenações de carcaçaa"
 description: "MAPA, PGA, SIGSIF"
 author:
   - name: "Ítalo Marques-Monteiro"
@@ -100,7 +100,7 @@ abate_categoria <- readr::read_csv2("sigsifrelatorioabates.csv",
     
 criar um *dataset* com uma coluna por especie abatida 
 ```{r}
-abate_especie <- abate_categoria %>%
+abate <- abate_categoria %>%
     dplyr::mutate(
         especie = case_when(
             stringr::str_detect(categoria, "^Bovino") ~ "Bovina",
@@ -173,7 +173,7 @@ abate_especie <- abate_categoria %>%
 
 ```{r}
 abt_uf <-
-abate_especie %>%
+abate %>%
     filter(especie == "Bovina") %>%
     group_by(ano, uf) %>%
     summarise(tot_ano = sum(qtd),
@@ -183,11 +183,11 @@ abate_especie %>%
     geom_col() +
     scale_x_continuous(labels = scales::comma) +
     scale_fill_viridis_d() +
-    labs(title = "Historical series of cattle slaughter",
+    labs(title = "Historical series of cattle slaughter in Brazil",
         subtitle = "Federal Inspection Service Values (1995-2022)",
         fill = "Year",
-        x = "Number ofcattle",
-        y = "Federative Units of Brazil",
+        x = "Number of cattle (millions)",
+        y = "Federative Units",
         caption = "by Ítalo Monteiro
         Source: MAPA [open data(2022)]") +
     theme(
@@ -207,11 +207,8 @@ ggsave("Images/abt_uf.png", plot = abt_uf, dpi = 1200)
 
 
 ```{r}
-```
-
-```{r}
 abt_sc <-
-abate_especie %>%
+abate %>%
     filter(uf == "SC" & especie == "Bovina") %>%
     group_by(ano, sexo) %>%
     summarise(tot_ano = sum(qtd),
@@ -279,19 +276,15 @@ ggsave("Images/abt_mt.png", plot = abt_mt, dpi = 1200)
 ``` 
 
 
-
-#& uf == c("RN", "PI", "DF", "PE", "PB", "CE", "AP)
-
-
-
 ```{r}
-abate_especie %>%
+abate %>%
     filter(especie == "Bovina") %>%
-    group_by(ano, uf), sexo %>%
+    group_by(ano, uf, sexo) %>%
     summarise(tot_ano = sum(qtd),
                 mean_ano = mean(qtd)) %>%
     ggplot(aes(x = tot_ano, y = reorder(uf, tot_ano), fill = as.factor(ano))) +
     geom_col() +
+    #facet_wrap(~ sexo) +
     facet_grid(~ sexo) +
     scale_x_continuous(labels = scales::comma) +
     scale_fill_viridis_d() +
@@ -299,7 +292,7 @@ abate_especie %>%
         subtitle = "Federal Inspection Service Values (1995-2022)",
         fill = "Year",
         x = "Number ofcattle",
-        y = "Federative Units of Brazil",
+        y = "Federative Units",
         caption = "by Ítalo Monteiro
         Source: MAPA [open data(2022)]") +
     theme(
@@ -313,3 +306,4 @@ abate_especie %>%
         axis.line = element_line(colour = "black"),
         panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
         )
+```
