@@ -241,8 +241,8 @@ ggsave("Images/abt_sc.png", plot = abt_sc, dpi = 1200)
 
  
 ```{r}
-abt_mt <-
-abate_especie %>%
+abt_sc_dens <-
+abate %>%
     filter(uf == "SC" & especie == "Bovina") %>%
     ggplot(aes(qtd, ano, fill = as.factor(sexo))) +
     ggridges::geom_density_ridges(quantile_lines = TRUE,
@@ -271,39 +271,6 @@ abate_especie %>%
         ) +
     annotate("text", x = 6000, y = 1.5, label = "* thousands of heads") +
     annotate("text", x = 7000, y = 2.5, label = "| vertical line - mean")
-abt_mt
-ggsave("Images/abt_mt.png", plot = abt_mt, dpi = 1200)
+abt_sc_dens
+ggsave("Images/abt_sc_dens.png", plot = abt_sc_dens, dpi = 1200)
 ``` 
-
-
-```{r}
-abate %>%
-    filter(especie == "Bovina") %>%
-    group_by(ano, uf, sexo) %>%
-    summarise(tot_ano = sum(qtd),
-                mean_ano = mean(qtd)) %>%
-    ggplot(aes(x = tot_ano, y = reorder(uf, tot_ano), fill = as.factor(ano))) +
-    geom_col() +
-    #facet_wrap(~ sexo) +
-    facet_grid(~ sexo) +
-    scale_x_continuous(labels = scales::comma) +
-    scale_fill_viridis_d() +
-    labs(title = "Historical series of cattle slaughter",
-        subtitle = "Federal Inspection Service Values (1995-2022)",
-        fill = "Year",
-        x = "Number ofcattle",
-        y = "Federative Units",
-        caption = "by Ítalo Monteiro
-        Source: MAPA [open data(2022)]") +
-    theme(
-        legend.title = element_text(size = 16),
-        legend.text = element_text(size = 12),
-        #legend.position = "none",
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        axis.text.y = element_text(size = 14, color = "black"),
-        axis.text.x = element_text(size = 14, color = "black"),
-        axis.line = element_line(colour = "black"),
-        panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
-        )
-```
