@@ -172,8 +172,7 @@ abate <- abate_categoria %>%
 
 
 ```{r}
-abt_uf <-
-abate %>%
+abt_uf <- abate %>%
     filter(especie == "Bovina") %>%
     group_by(ano, uf) %>%
     summarise(tot_ano = sum(qtd),
@@ -207,8 +206,7 @@ ggsave("Images/abt_uf.png", plot = abt_uf, dpi = 1200)
 
 
 ```{r}
-abt_sc <-
-abate %>%
+abt_sc <- abate %>%
     filter(uf == "SC" & especie == "Bovina") %>%
     group_by(ano, sexo) %>%
     summarise(tot_ano = sum(qtd),
@@ -241,8 +239,7 @@ ggsave("Images/abt_sc.png", plot = abt_sc, dpi = 1200)
 
  
 ```{r}
-abt_sc_dens <-
-abate %>%
+abt_sc_dens <- abate %>%
     filter(uf == "SC" & especie == "Bovina") %>%
     ggplot(aes(qtd, ano, fill = as.factor(sexo))) +
     ggridges::geom_density_ridges(quantile_lines = TRUE,
