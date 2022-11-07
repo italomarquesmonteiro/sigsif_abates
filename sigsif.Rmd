@@ -219,7 +219,7 @@ abt_sc <- abate %>%
         subtitle = "Federal Inspection Service Values",
         fill = "Gender",
         x = "Year",
-        y = "Number of cattle slaughter (thousands)",
+   m     y = "Number of cattle slaughter (thousands)",
         caption = "by Ítalo Monteiro
         Source: MAPA [open data(2022)]") +
     theme(
