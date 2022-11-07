@@ -211,7 +211,7 @@ abt_sc <- abate %>%
     group_by(ano, sexo) %>%
     summarise(tot_ano = sum(qtd),
                 mean_ano = mean(qtd)) %>%
-    ggplot(aes(ano, tot_ano, fill = as.factor(sexo))) +
+    ggplot(aes(ano, tot_ano / 1000, fill = as.factor(sexo))) +
     scale_y_continuous(labels = scales::comma) +
     scale_fill_manual(values = c("#E46726", "#6D9EC1")) +
     geom_col(position = "dodge", width = .7, color = "black") +
@@ -219,7 +219,7 @@ abt_sc <- abate %>%
         subtitle = "Federal Inspection Service Values",
         fill = "Gender",
         x = "Year",
-        y = "Number of cattle slaughter",
+        y = "Number of cattle slaughter (thousands)",
         caption = "by Ítalo Monteiro
         Source: MAPA [open data(2022)]") +
     theme(
@@ -234,7 +234,7 @@ abt_sc <- abate %>%
         panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
         )
 abt_sc
-ggsave("Images/abt_sc.png", plot = abt_sc, dpi = 1200)
+ggsave("Images/abt_sc.png", plot = abt_sc, dpi = 1200, width = 12, height = 7)
 ```
 
  
