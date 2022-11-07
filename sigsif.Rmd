@@ -219,7 +219,7 @@ abt_sc <- abate %>%
         subtitle = "Federal Inspection Service Values",
         fill = "Gender",
         x = "Year",
-   m     y = "Number of cattle slaughter (thousands)",
+        y = "Number of cattle slaughter (thousands)",
         caption = "by Ítalo Monteiro
         Source: MAPA [open data(2022)]") +
     theme(
@@ -228,8 +228,8 @@ abt_sc <- abate %>%
         #legend.position = "none",
         axis.title.x = element_text(size = 16),
         axis.title.y = element_text(size = 16),
-        axis.text.y = element_text(size = 14, color = "black"),
-        axis.text.x = element_text(size = 14, color = "black"),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.text.x = element_text(size = 12, color = "black"),
         axis.line = element_line(colour = "black"),
         panel.border = element_rect(colour = "black", fill = NA, size = 0.5)
         )
