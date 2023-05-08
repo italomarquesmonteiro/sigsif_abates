@@ -3,7 +3,7 @@ title: "Análise grafica de dados de abate"
 description: "MAPA, PGA, SIGSIF"
 author:
   - name: "Ítalo Marques-Monteiro"
-    url: https://scholar.google.com/citations?user=xGU7H1QAAAAJ&hl=en
+    url: 
     affiliation: Anhanguera College
         Department: Veterinary Medicine
     affiliation_url: https://www.anhanguera.com
